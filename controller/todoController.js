@@ -31,3 +31,26 @@ exports.makeTodo = async (req, res) => {
     res.status(400).json({ status: "fail", err });
   }
 };
+
+exports.deleteTodoOne = async (req, res) => {
+  try {
+    const todos = await Todo.findByIdAndDelete(req.params.id);
+    res.status(204).json({ status: "success", data: null });
+  } catch (err) {
+    res.status(400).json({ status: "fail", err });
+  }
+};
+
+exports.updateTodoOne = async (req, res) => {
+  try {
+    console.log(req.params.id, req.body);
+    const todos = await Todo.findByIdAndUpdate(req.params.id, req.body, {
+      // new : return the document after the update is applied
+      new: true,
+    });
+    res.status(200).json({ status: "success", data: todos });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ status: "fail", err: err.message });
+  }
+};
