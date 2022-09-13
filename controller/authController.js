@@ -1,39 +1,43 @@
 const User = require("../model/userModel");
 const bcrypt = require("bcrypt");
 const shortid = require("shortid");
+const customError = require("../util/error/customError");
 
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
   try {
-    const { id, pwd } = req.body;
-    const user = await User.findOne({ id });
-    console.log(user);
-    res.status(201).json({
+    res.status(200).json({
       status: "success",
-      data: null,
+      statusCode: 200,
+      data: {},
     });
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ status: "fail", err });
+    next(err);
   }
 };
 
-exports.logout = (req, res) => {
+exports.logout = (req, res, next) => {
   try {
     req.logout(() => {
       req.session.destroy();
       res.status(201).json({
         status: "success",
-        data: null,
+        statusCode: 200,
+        data: {},
       });
     });
   } catch (err) {
-    console.log(err);
-    res.status(400).json({ status: "fail", err });
+    next(new customError("fail logout"), 404, "fail logout");
   }
 };
 
-exports.signUp = async (req, res) => {
+exports.signUp = async (req, res, next) => {
   try {
+    const { id, pwd, name } = req.body;
+    const exUser = await User.findOne({ id });
+    if (exUser) {
+      throw new customError("duplicate user", 404, "signUpError");
+    }
+
     bcrypt.hash(req.body.pwd, 10, async (err, hash) => {
       const user = {
         _id: shortid.generate(),
@@ -49,6 +53,7 @@ exports.signUp = async (req, res) => {
       });
     });
   } catch (err) {
-    res.status(400).json({ status: "fail", err });
+    if (err instanceof customError) next(err);
+    next(new customError("fail signUp", 404, "fail sign up"));
   }
 };

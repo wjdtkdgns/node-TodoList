@@ -9,6 +9,8 @@ const session = require("express-session");
 const MongoDBStore = require("express-mongodb-session")(session);
 const bcrypt = require("bcrypt");
 const User = require("./model/userModel");
+const globalErrorHandler = require("./controller/errorController");
+const customError = require("./util/error/customError");
 
 const app = express();
 
@@ -118,8 +120,14 @@ app.use((req, res, next) => {
 // router
 app.use("/api/v1/todo", todoRouter);
 app.use("/api/v1/auth", authRouter);
+app.all("*", (req, res, next) => {
+  const err = new customError(`Can't find ${req.originalUrl} on this server!`);
+  next(err);
+});
 
 app.use(morgan("dev"));
+
+app.use(globalErrorHandler);
 
 app.listen(3000, () => {
   console.log("start server");
