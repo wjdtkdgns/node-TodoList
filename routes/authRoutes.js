@@ -8,7 +8,7 @@ const customError = require("../util/error/customError");
 const authRouter = express.Router();
 
 authRouter.route("/login").get(
-  isLoggedIn,
+  isNotLoggedIn,
   (req, res, next) => {
     passport.authenticate("json", (authError, user, info) => {
       // (authError, user, info) => 이 콜백 미들웨어는 localstrategy에서 done()이 호출되면 실행된다.
@@ -49,8 +49,10 @@ authRouter.route("/login").get(
 );
 // passport.authenticate 는 middleware이다. function 안에서 실행시키면 안된다.
 
-authRouter.route("/signup").post(isLoggedIn, authController.signUp);
+authRouter.route("/signup").post(isNotLoggedIn, authController.signUp);
 
-authRouter.route("/logout").get(isNotLoggedIn, authController.logout);
+authRouter.route("/logout").get(isLoggedIn, authController.logout);
+
+authRouter.route("/changepwd").patch(isLoggedIn, authController.changePassword);
 
 module.exports = authRouter;

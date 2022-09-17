@@ -1,6 +1,5 @@
 const User = require("../model/userModel");
 const bcrypt = require("bcrypt");
-const shortid = require("shortid");
 const customError = require("../util/error/customError");
 
 exports.login = async (req, res, next) => {
@@ -38,12 +37,11 @@ exports.signUp = async (req, res, next) => {
       throw new customError("duplicate user", 404, "signUpError");
     }
 
-    bcrypt.hash(req.body.pwd, 10, async (err, hash) => {
+    bcrypt.hash(pwd, 10, async (err, hash) => {
       const user = {
-        _id: shortid.generate(),
-        id: req.body.id,
+        id,
         pwd: hash,
-        name: req.body.name,
+        name,
       };
       User.create(user);
 
@@ -53,7 +51,41 @@ exports.signUp = async (req, res, next) => {
       });
     });
   } catch (err) {
-    if (err instanceof customError) next(err);
-    next(new customError("fail signUp", 404, "fail sign up"));
+    if (err instanceof customError) {
+      next(err);
+    } else {
+      next(new customError("fail signUp", 404, "fail sign up"));
+    }
+  }
+};
+
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { id, pwd } = req.body;
+    console.log(id);
+    const user = await User.findOne({ id });
+    console.log(111111, user);
+    if (!user) throw new customError("wrong user", 404, "can't find user");
+    bcrypt.hash(pwd, 10, async (err, hash) => {
+      user.pwd = hash;
+      await user.save();
+    });
+    console.log(222222, user);
+    req.logout(() => {
+      req.session.destroy();
+      res.status(201).json({
+        status: "success",
+        statusCode: 200,
+        data: {},
+      });
+    });
+  } catch (err) {
+    console.log(err);
+    if (err instanceof customError) {
+      next(err);
+    } else {
+      // console.log(err);
+      next(new customError("fail logout"), 404, "fail logout");
+    }
   }
 };

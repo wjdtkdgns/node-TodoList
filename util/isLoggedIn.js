@@ -2,9 +2,9 @@ const customError = require("./error/customError");
 exports.isLoggedIn = (req, res, next) => {
   try {
     if (!req.isAuthenticated()) {
-      next();
+      throw new customError("not logged in", 404, "log in Error");
     } else {
-      throw new customError("already logged in", 404, "log in Error");
+      next();
     }
   } catch (err) {
     next(err);
