@@ -25,7 +25,7 @@ exports.logout = (req, res, next) => {
       });
     });
   } catch (err) {
-    next(new customError("fail logout"), 404, "fail logout");
+    next(new customError("fail logout", 404, "fail logout"));
   }
 };
 

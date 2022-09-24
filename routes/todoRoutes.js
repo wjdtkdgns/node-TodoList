@@ -1,7 +1,10 @@
 const express = require("express");
 const todoController = require("./../controller/todoController");
+const { isLoggedIn } = require("../util/isLoggedIn");
 
 const todoRouter = express.Router();
+
+todoRouter.use(isLoggedIn);
 
 todoRouter
   .route("/")
